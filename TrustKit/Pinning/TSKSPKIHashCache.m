@@ -12,7 +12,7 @@
 #import "TSKSPKIHashCache.h"
 #import "../TSKLog.h"
 #import <CommonCrypto/CommonDigest.h>
-
+#import "pinning_utils.h"
 
 #pragma mark Missing ASN1 SPKI Headers
 
@@ -274,16 +274,20 @@ static unsigned int getAsn1HeaderSize(NSString *publicKeyType, NSNumber *publicK
     }
     
     // Get a public key reference for the certificate from the trust
-    SecTrustResultType result;
-    status = SecTrustEvaluate(trust, &result);
-    if (status != errSecSuccess)
+    // The certificate chain must be evaluated first in order to be able
+    // to determine which is the leaf certificate of the chain, and only
+    // then SecTrustCopyKey can be called
+    NSError *error = NULL;
+    SecTrustResultType trustResult = 0;
+    evaluateCertificateChainTrust(trust, &trustResult, &error);
+    if ((error != NULL) && (trustResult != kSecTrustResultRecoverableTrustFailure))
     {
-        TSKLog(@"Could not evaluate trust for the certificate, got status %d", status);
+        TSKLog(@"Could not evaluate trust for the certificate: %@", [error localizedDescription]);
         CFRelease(trust);
         return nil;
     }
     
-    SecKeyRef publicKey = SecTrustCopyPublicKey(trust);
+    SecKeyRef publicKey = copyKey(trust);
     CFRelease(trust);
     return publicKey;
 }

@@ -14,6 +14,7 @@
 #import "../Dependencies/domain_registry/domain_registry.h"
 #import "../configuration_utils.h"
 #import "../TSKLog.h"
+#import "pinning_utils.h"
 
 
 #pragma mark SSL Pin Verifier
@@ -39,14 +40,17 @@ TSKTrustEvaluationResult verifyPublicKeyPin(SecTrustRef serverTrust, NSString *s
     SecTrustSetPolicies(serverTrust, SslPolicy);
     CFRelease(SslPolicy);
     
+    NSError *error = NULL;
     SecTrustResultType trustResult = 0;
-    if (SecTrustEvaluate(serverTrust, &trustResult) != errSecSuccess)
+    
+    evaluateCertificateChainTrust(serverTrust, &trustResult, &error);
+    if ((error != NULL) && (trustResult == kSecTrustResultInvalid))
     {
-        TSKLog(@"SecTrustEvaluate error for %@", serverHostname);
+        TSKLog(@"SecTrustEvaluate error for %@: %@", serverHostname, [error localizedDescription]);
         CFRelease(serverTrust);
         return TSKTrustEvaluationErrorInvalidParameters;
     }
-    
+
     if ((trustResult != kSecTrustResultUnspecified) && (trustResult != kSecTrustResultProceed))
     {
         // Default SSL validation failed
@@ -62,7 +66,7 @@ TSKTrustEvaluationResult verifyPublicKeyPin(SecTrustRef serverTrust, NSString *s
     for(int i=(int)certificateChainLen-1;i>=0;i--)
     {
         // Extract the certificate
-        SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, i);
+        SecCertificateRef certificate = getCertificateAtIndex(serverTrust, i);
         
         CFStringRef certificateSubject = SecCertificateCopySubjectSummary(certificate);
         if (certificateSubject != nil)
@@ -121,7 +125,7 @@ TSKTrustEvaluationResult verifyPublicKeyPin(SecTrustRef serverTrust, NSString *s
     {
         for(int i=0;i<certificateChainLen;i++)
         {
-            SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, i);
+            SecCertificateRef certificate = getCertificateAtIndex(serverTrust, i);
             
             // Is the certificate chain's anchor a user-defined anchor ?
             if ([customRootCerts containsObject:(__bridge id)(certificate)])

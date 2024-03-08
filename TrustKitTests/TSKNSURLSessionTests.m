@@ -11,6 +11,7 @@
 #import "../TrustKit/public/TSKPinningValidator.h"
 #import "../TrustKit/public/TSKPinningValidatorResult.h"
 #import "../TrustKit/Swizzling/TSKNSURLSessionDelegateProxy.h"
+#import "../TrustKit/configuration_utils.h"
 
 #import <OCMock/OCMock.h>
 
@@ -167,7 +168,7 @@
     TSKNSURLSessionDelegateProxy *proxy = [[TSKNSURLSessionDelegateProxy alloc] initWithTrustKit:self.trustKit
                                                                                  sessionDelegate:delegate];
     
-    NSURLSession *session = [NSURLSession new];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:ephemeralNSURLSessionConfiguration()];
     NSURLAuthenticationChallenge *challenge = ({
         NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@""
                                                                             port:443
@@ -197,7 +198,7 @@
     TSKNSURLSessionDelegateProxy *proxy = [[TSKNSURLSessionDelegateProxy alloc] initWithTrustKit:self.trustKit
                                                                                  sessionDelegate:delegate];
     
-    NSURLSession *session = [NSURLSession new];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:ephemeralNSURLSessionConfiguration()];
     NSURLAuthenticationChallenge *challenge = ({
         NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@""
                                                                             port:443
@@ -227,7 +228,7 @@
     TSKNSURLSessionDelegateProxy *proxy = [[TSKNSURLSessionDelegateProxy alloc] initWithTrustKit:self.trustKit
                                                                                  sessionDelegate:delegate];
     
-    NSURLSession *session = [NSURLSession new];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:ephemeralNSURLSessionConfiguration()];
     NSURLAuthenticationChallenge *challenge = ({
         NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@"hostname"
                                                                             port:443
@@ -264,7 +265,7 @@
     TSKNSURLSessionDelegateProxy *proxy = [[TSKNSURLSessionDelegateProxy alloc] initWithTrustKit:self.trustKit
                                                                                  sessionDelegate:delegate];
     
-    NSURLSession *session = [NSURLSession new];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:ephemeralNSURLSessionConfiguration()];
     NSURLAuthenticationChallenge *challenge = ({
         NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@"hostname"
                                                                             port:443
@@ -303,7 +304,7 @@
     TSKNSURLSessionDelegateProxy *proxy = [[TSKNSURLSessionDelegateProxy alloc] initWithTrustKit:self.trustKit
                                                                                  sessionDelegate:delegate];
     
-    NSURLSession *session = [NSURLSession new];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:ephemeralNSURLSessionConfiguration()];
     NSURLAuthenticationChallenge *challenge = ({
         NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@"hostname"
                                                                             port:443
@@ -339,7 +340,7 @@
     TSKNSURLSessionDelegateProxy *proxy = [[TSKNSURLSessionDelegateProxy alloc] initWithTrustKit:self.trustKit
                                                                                  sessionDelegate:delegate];
     
-    NSURLSession *session = [NSURLSession new];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:ephemeralNSURLSessionConfiguration()];
     NSURLAuthenticationChallenge *challenge = ({
         NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@"hostname"
                                                                             port:443
@@ -357,7 +358,7 @@
     TSKURLSessionAuthChallengeCallback completionHandler = ^(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential) {};
     
     // Ensure that the challenge is forwarded to the delegate to the task-based handler
-    NSURLSessionTask *task = [NSURLSessionTask new];
+    NSURLSessionTask *task = [session downloadTaskWithURL:[NSURL URLWithString:@"www.example.com"]];
     OCMExpect([delegate URLSession:session
                               task:task
                didReceiveChallenge:challenge
